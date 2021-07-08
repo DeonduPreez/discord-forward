@@ -17,7 +17,7 @@ enum
 	Report,
 	Comms,
 	Type_Count,
-	Type_Unknown,
+	Type_Unknown
 };
 
 int EmbedColors[Type_Count] = {
@@ -28,9 +28,12 @@ int EmbedColors[Type_Count] = {
 
 ConVar Convars[Type_Count];
 
+ConVar cvUserMentions;
+
 char sEndpoints[Type_Count][256]
 	, sHostname[64]
 	, sHost[64];
+char sUserMentions[256];
 
 public Plugin myinfo =
 {
@@ -50,10 +53,13 @@ public void OnPluginStart()
 	Convars[Report] = CreateConVar("sbpp_discord_reporthook", "", "Discord web hook endpoint for report forward. If left empty, the ban endpoint will be used instead", FCVAR_PROTECTED);
 	
 	Convars[Comms] = CreateConVar("sbpp_discord_commshook", "", "Discord web hook endpoint for comms forward. If left empty, the ban endpoint will be used instead", FCVAR_PROTECTED);
+	
+	cvUserMentions = CreateConVar("sbpp_discord_usermentions", "", "Discord web hook endpoint for comms forward. If left empty, the ban endpoint will be used instead", FCVAR_PROTECTED);
 
 	Convars[Ban].AddChangeHook(OnConvarChanged);
 	Convars[Report].AddChangeHook(OnConvarChanged);
 	Convars[Comms].AddChangeHook(OnConvarChanged);
+	cvUserMentions.AddChangeHook(OnConvarChanged);
 }
 
 public void OnConfigsExecuted()
@@ -76,6 +82,7 @@ public void OnConfigsExecuted()
 	Convars[Ban].GetString(sEndpoints[Ban], sizeof sEndpoints[]);
 	Convars[Report].GetString(sEndpoints[Report], sizeof sEndpoints[]);
 	Convars[Comms].GetString(sEndpoints[Comms], sizeof sEndpoints[]);
+	cvUserMentions.GetString(sUserMentions, sizeof sUserMentions[]);
 }
 
 public void SBPP_OnBanPlayer(int iAdmin, int iTarget, int iTime, const char[] sReason)
@@ -210,6 +217,8 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iType = Ban,
 	json_array_append_new(jEmbeds, jContent);
 
 	json_object_set_new(jRequest, "username", json_string("SourceBans++"));
+	//json_object_set_new(jRequest, "content", json_string(sUserMentions)); // TODO : Figure this out
+	json_object_set_new(jRequest, "content", json_string("<@258301947109441536> <@214104633491062784> <@535093687366189088>"));
 	json_object_set_new(jRequest, "avatar_url", json_string("https://sbpp.github.io/img/favicons/android-chrome-512x512.png"));
 	json_object_set_new(jRequest, "embeds", jEmbeds);
 
@@ -269,6 +278,8 @@ public void OnConvarChanged(ConVar convar, const char[] oldValue, const char[] n
 		Convars[Report].GetString(sEndpoints[Report], sizeof sEndpoints[]);
 	else if (convar == Convars[Comms])
 		Convars[Comms].GetString(sEndpoints[Comms], sizeof sEndpoints[]);
+	else if (convar == cvUserMentions)
+		cvUserMentions.GetString(sUserMentions, sizeof sUserMentions[]);
 }
 
 int GetEmbedColor(int iType)

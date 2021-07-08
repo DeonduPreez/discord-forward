@@ -217,8 +217,11 @@ void SendReport(int iClient, int iTarget, const char[] sReason, int iType = Ban,
 	json_array_append_new(jEmbeds, jContent);
 
 	json_object_set_new(jRequest, "username", json_string("SourceBans++"));
-	//json_object_set_new(jRequest, "content", json_string(sUserMentions)); // TODO : Figure this out
-	json_object_set_new(jRequest, "content", json_string("<@258301947109441536> <@214104633491062784> <@535093687366189088>"));
+	if (iType == Report)
+	{
+		GetConVarString(cvUserMentions, sUserMentions, sizeof(sUserMentions));
+		json_object_set_new(jRequest, "content", json_string(sUserMentions));
+	}
 	json_object_set_new(jRequest, "avatar_url", json_string("https://sbpp.github.io/img/favicons/android-chrome-512x512.png"));
 	json_object_set_new(jRequest, "embeds", jEmbeds);
 
